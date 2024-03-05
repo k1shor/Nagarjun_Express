@@ -3,6 +3,7 @@ require('dotenv').config()
 require('./Database/connection')
 const TestRoute = require('./routes/testroute')
 const ProgramRoute = require('./routes/ProgramRoutes')
+const SubjectRoute = require('./routes/SubjectRoute')
 
 const app = express()
 const port = process.env.PORT
@@ -13,7 +14,7 @@ app.use(express.json())
 
 app.use(TestRoute)
 app.use(ProgramRoute)
-
+app.use(SubjectRoute)
 
 
 app.listen(port, ()=>{
