@@ -7,6 +7,18 @@ const StudentSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
+    first_name: {
+        type: String, 
+        required: true
+    },
+    last_name: {
+        type: String, 
+        required: true
+    },
+    gender:{
+        type: String,
+        required: true
+    },
     program: {
         type: ObjectId,
         ref: "Program",
