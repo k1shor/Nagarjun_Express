@@ -16,7 +16,8 @@ app.use(express.json())
 app.use(TestRoute)
 app.use(ProgramRoute)
 app.use(SubjectRoute)
-app.use(StudentRoute)
+app.use('/student',StudentRoute)
+app.use('/public/uploads',express.static('public/uploads'))
 
 
 app.listen(port, ()=>{

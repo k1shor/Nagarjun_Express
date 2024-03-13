@@ -5,14 +5,18 @@ const crypto = require('crypto')
 const bcrypt = require('bcrypt')
 const sendEmail = require('../utils/sendEmail')
 const jwt = require('jsonwebtoken')
-const { expressjwt } = require('express-jwt')
+// const { expressjwt } = require('express-jwt')
 
 
 // const uuidv1 = require('uuidv1')
 
 // register student
 exports.registerStudent = async (req, res) => {
-    const { username, email, password, program, semester } = req.body
+    if (!req.file) {
+        return res.status(400).json({ error: "Please provide student photo" })
+    }
+
+    const { username, first_name, last_name, gender, email, password, program, semester } = req.body
     let salt = await bcrypt.genSalt(10)
     let hashed_password = await bcrypt.hash(password, salt)
     if (!hashed_password) {
@@ -28,8 +32,12 @@ exports.registerStudent = async (req, res) => {
     }
     let student = await StudentModel.create({
         user: user._id,
+        first_name: first_name,
+        last_name: last_name,
+        gender: gender,
         program: program,
-        semester: semester
+        semester: semester,
+        image: req.file?.path
     })
     // generate token and send in email
     let token = await TokenModel.create({
@@ -113,16 +121,16 @@ exports.signin = async (req, res) => {
     res.send({ token, user: { email, username, role } })
 }
 
-exports.authorizeStudent = expressjwt(
-    {
-        secret: process.env.JWT_SECRET,
-        algorithms: ['HS256']
-    }
-)
+// exports.authorizeStudent = expressjwt(
+//     {
+//         secret: process.env.JWT_SECRET,
+//         algorithms: ['HS256']
+//     }
+// )
 
 // get student list
 exports.getAllStudents = async (req, res) => {
-    let students = await StudentModel.find()
+    let students = await StudentModel.find().populate('user').populate('program')
     if (!students) {
         return res.status(400).json({ error: "Something went wrong" })
     }
@@ -131,7 +139,7 @@ exports.getAllStudents = async (req, res) => {
 
 // get student details
 exports.getStudentDetails = async (req, res) => {
-    let student = await StudentModel.findById(req.params.id).populate('user')
+    let student = await StudentModel.findById(req.params.id).populate('user').populate('program')
     if (!student) {
         return res.status(400).json({ error: "Something went wrong" })
     }
@@ -139,12 +147,13 @@ exports.getStudentDetails = async (req, res) => {
 }
 // get student details by name, semeter, program
 exports.findStudent = async (req, res) => {
-
+    console.log(req.query)
     // localhost:5000/findstudent?sortBy=first_name&order=ascending
     let order = req.query.order ? req.query.order : '1'
-    // 1 - ascending, -1 - desccending, "ASCENDING" or "DESCENDING"
+    // 1 - ascending, -1 - desccending, "ASCENDING" or "DESCENDING"/ asc or desc
     let sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt'
     // first_name, last_name, program, semester
+
 
 
     let filter = req.body.filter
@@ -155,7 +164,8 @@ exports.findStudent = async (req, res) => {
         lastname: [] 
     }
 */
-    let students = await StudentModel.find(filter).populater('user')
+    let students = await StudentModel.find(filter).populate('user').populate('program')
+        .sort([[sortBy, order]])
     if (!students) {
         return res.status(400).json({ error: "Something went wrong" })
     }

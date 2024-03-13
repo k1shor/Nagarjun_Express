@@ -27,6 +27,10 @@ const StudentSchema = new mongoose.Schema({
     semester: {
         type: String,
         required: true
+    },
+    image:{
+        type: String,
+        // required: true
     }
 })
 
