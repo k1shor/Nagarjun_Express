@@ -1,19 +1,19 @@
 const UserModel = require('../models/UserModel')
-const StudentModel = require('../models/StudentModel')
+const TeacherModel = require('../models/TeacherModel')
 const TokenModel = require('../models/TokenModel')
 const crypto = require('crypto')
 const bcrypt = require('bcrypt')
 const sendEmail = require('../utils/sendEmail')
 const jwt = require('jsonwebtoken')
-const { expressjwt } = require('express-jwt')
+// const { expressjwt } = require('express-jwt')
 
 
 // const uuidv1 = require('uuidv1')
 
-// register student
-exports.registerStudent = async (req, res) => {
+// register teacher
+exports.registerTeacher = async (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ error: "Please provide student photo" })
+        return res.status(400).json({ error: "Please provide teacher photo" })
     }
 
     const { username, first_name, last_name, gender, email, password, program, semester } = req.body
@@ -30,7 +30,7 @@ exports.registerStudent = async (req, res) => {
     if (!user) {
         return res.status(400).json({ error: "Failed to register user" })
     }
-    let student = await StudentModel.create({
+    let teacher = await TeacherModel.create({
         user: user._id,
         first_name: first_name,
         last_name: last_name,
@@ -57,10 +57,10 @@ exports.registerStudent = async (req, res) => {
         text: "Click on the following link to verify your email " + verify_url,
         html: `<a href='${verify_url}'><button>Verify your account.</button></a>`
     })
-    if (!student) {
-        return res.status(400).json({ error: "Failed to register student" })
+    if (!teacher) {
+        return res.status(400).json({ error: "Failed to register teacher" })
     }
-    res.send({ student, user })
+    res.send({ teacher, user })
 }
 
 // verify 
@@ -121,34 +121,34 @@ exports.signin = async (req, res) => {
     res.send({ token, user: { email, username, role } })
 }
 
-// exports.authorizeStudent = expressjwt(
+// exports.authorizeTeacher = expressjwt(
 //     {
 //         secret: process.env.JWT_SECRET,
 //         algorithms: ['HS256']
 //     }
 // )
 
-// get student list
-exports.getAllStudents = async (req, res) => {
-    let students = await StudentModel.find().populate('user').populate('program')
-    if (!students) {
+// get teacher list
+exports.getAllTeachers = async (req, res) => {
+    let teachers = await TeacherModel.find().populate('user').populate('program')
+    if (!teachers) {
         return res.status(400).json({ error: "Something went wrong" })
     }
-    res.send(students)
+    res.send(teachers)
 }
 
-// get student details
-exports.getStudentDetails = async (req, res) => {
-    let student = await StudentModel.findById(req.params.id).populate('user').populate('program')
-    if (!student) {
+// get teacher details
+exports.getTeacherDetails = async (req, res) => {
+    let teacher = await TeacherModel.findById(req.params.id).populate('user').populate('program')
+    if (!teacher) {
         return res.status(400).json({ error: "Something went wrong" })
     }
-    res.send(student)
+    res.send(teacher)
 }
-// get student details by name, semeter, program
-exports.findStudent = async (req, res) => {
+// get teacher details by name, semeter, program
+exports.findTeacher = async (req, res) => {
     console.log(req.query)
-    // localhost:5000/findstudent?sortBy=first_name&order=ascending
+    // localhost:5000/findteacher?sortBy=first_name&order=ascending
     let order = req.query.order ? req.query.order : '1'
     // 1 - ascending, -1 - desccending, "ASCENDING" or "DESCENDING"/ asc or desc
     let sortBy = req.query.sortBy ? req.query.sortBy : 'createdAt'
@@ -164,52 +164,55 @@ exports.findStudent = async (req, res) => {
         lastname: [] 
     }
 */
-    let students = await StudentModel.find(filter).populate('user').populate('program')
+    let teachers = await TeacherModel.find(filter).populate('user').populate('program')
         .sort([[sortBy, order]])
-    if (!students) {
+    if (!teachers) {
         return res.status(400).json({ error: "Something went wrong" })
     }
-    res.send(students)
+    res.send(teachers)
 
 }
 
 
 // admin middleware 
-exports.requireTeacher = (req, res, next) => {
+exports.requireAdmin = (req, res, next) => {
     expressjwt({
-        secret: process.env.JWT_SECRET,
-        algorithms: ['HS256'],
-        userProperty: 'auth'
+      secret: process.env.JWT_SECRET,
+      algorithms: ['HS256'],
+      userProperty:'auth'
     })(req, res, (err) => {
-        if (err) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-        if (req.auth.role === "teacher") {
-            next();
-        } else {
-            return res.status(403).json({ error: 'You are not authorized to access this page' });
-        }
+      if (err) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      if (req.auth.role === "teacher") {
+        next();
+      } else {
+        return res.status(403).json({ error: 'You are not authorized to access this page' });
+      }
     })
-}
+  }
 
-// user middleware 
+  // user middleware 
 exports.requireUser = (req, res, next) => {
     expressjwt({
-        secret: process.env.JWT_SECRET,
-        algorithms: ['HS256'],
-        userProperty: 'auth'
+      secret: process.env.JWT_SECRET,
+      algorithms: ['HS256'],
+      userProperty:'auth'
     })(req, res, (err) => {
-        if (err) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+      if (err) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      if (req.auth.role === "teacher") {
         next();
-
+      } else {
+        return res.status(403).json({ error: 'You are not authorized to access this page' });
+      }
     })
-}
-
+  }
+  
 
 // signout 
-exports.signOut = (req, res) => {
+exports.signOut=(req,res)=>{
     res.clearCookie('myCookie')
-    res.json({ message: 'signout success' })
+    res.json({message:'signout success'})
 }

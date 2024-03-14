@@ -5,6 +5,7 @@ const TestRoute = require('./routes/testroute')
 const ProgramRoute = require('./routes/ProgramRoutes')
 const SubjectRoute = require('./routes/SubjectRoute')
 const StudentRoute = require('./routes/StudentRoute')
+const Teacher = require('./routes/TeacherRoute')
 
 const app = express()
 const port = process.env.PORT
@@ -17,6 +18,7 @@ app.use(TestRoute)
 app.use(ProgramRoute)
 app.use(SubjectRoute)
 app.use('/student',StudentRoute)
+app.use('/teacher',TeacherRoute)
 app.use('/public/uploads',express.static('public/uploads'))
 
 
