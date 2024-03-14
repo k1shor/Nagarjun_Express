@@ -174,42 +174,7 @@ exports.findTeacher = async (req, res) => {
 }
 
 
-// admin middleware 
-exports.requireAdmin = (req, res, next) => {
-    expressjwt({
-      secret: process.env.JWT_SECRET,
-      algorithms: ['HS256'],
-      userProperty:'auth'
-    })(req, res, (err) => {
-      if (err) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-      if (req.auth.role === "teacher") {
-        next();
-      } else {
-        return res.status(403).json({ error: 'You are not authorized to access this page' });
-      }
-    })
-  }
 
-  // user middleware 
-exports.requireUser = (req, res, next) => {
-    expressjwt({
-      secret: process.env.JWT_SECRET,
-      algorithms: ['HS256'],
-      userProperty:'auth'
-    })(req, res, (err) => {
-      if (err) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-      if (req.auth.role === "teacher") {
-        next();
-      } else {
-        return res.status(403).json({ error: 'You are not authorized to access this page' });
-      }
-    })
-  }
-  
 
 // signout 
 exports.signOut=(req,res)=>{

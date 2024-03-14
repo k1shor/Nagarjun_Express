@@ -174,7 +174,7 @@ exports.findStudent = async (req, res) => {
 }
 
 
-// admin middleware 
+// teacher middleware 
 exports.requireTeacher = (req, res, next) => {
     expressjwt({
         secret: process.env.JWT_SECRET,
@@ -191,19 +191,16 @@ exports.requireTeacher = (req, res, next) => {
         }
     })
 }
-
 // user middleware 
 exports.requireUser = (req, res, next) => {
     expressjwt({
         secret: process.env.JWT_SECRET,
         algorithms: ['HS256'],
-        userProperty: 'auth'
     })(req, res, (err) => {
         if (err) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
         next();
-
     })
 }
 
